@@ -4,10 +4,13 @@ module Wellness
   class System
     attr_reader :name
 
+    attr_accessor :details
+
     # @param name [String] the name of the system
     def initialize(name)
       @name = name
       @services = Hash.new
+      @details = Hash.new
     end
 
     # Add a service to this system
@@ -26,17 +29,11 @@ module Wellness
       @services.delete(name)
     end
 
-    # Returns the services that are within this system
-    #
-    # @return [Hash]
-    def services
-      @services.dup
-    end
-
     # Checks all of the services
     # @return
     def check
       @services.values.each { |service| service.call }
+      healthy?
     end
 
     # Returns true if the system is healthy, false otherwise
@@ -44,6 +41,22 @@ module Wellness
     # @return [Boolean]
     def healthy?
       @services.values.all? { |service| service.healthy? }
+    end
+
+    def to_json(*)
+      dependencies = Hash.new
+
+      @services.each do |name, service|
+        dependencies[name] = service.last_check
+      end
+
+      data = {
+        status: (healthy? ? 'HEALTHY' : 'UNHEALTHY'),
+        details: @details,
+        dependencies: dependencies
+      }
+
+      data.to_json
     end
   end
 
