@@ -12,6 +12,7 @@ module Wellness
         redis_stats = redis.info.select { |k, _| KEYS.include?(k) }
         workers_size = redis.scard("workers").to_i
 
+        passed_check
         {
           status: 'HEALTHY',
           details: {
@@ -26,6 +27,7 @@ module Wellness
           }
         }
       rescue => error
+        failed_check
         {
           status: 'UNHEALTHY',
           details: {
