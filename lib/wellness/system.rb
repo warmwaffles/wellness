@@ -2,7 +2,7 @@ module Wellness
 
   # @author Matthew A. Johnston
   class System
-    attr_reader :name
+    attr_reader :name, :services
 
     attr_accessor :details
 
