@@ -1,16 +1,20 @@
 module Wellness
 
   class Checker
-    def initialize(app, system)
+    def initialize(app, system, options={})
       @app = app
       @system = system
+
+      # Optional arguments
+      @health_status_path  = options[:status_path]  || '/health/status'
+      @health_details_path = options[:details_path] || '/health/details'
     end
 
     def call(env)
       case env['PATH_INFO']
-        when '/health/status'
+        when @health_status_path
           health_status(env)
-        when '/health/details'
+        when @health_details_path
           health_details(env)
         else
           @app.call(env)
