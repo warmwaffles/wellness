@@ -59,6 +59,43 @@ system.add_service('redis', redis)
 use(Wellness::Checker, system)
 ```
 
+## Example Response
+
+```json
+{
+  "status":"UNHEALTHY",
+  "details":{
+
+  },
+  "dependencies":{
+    "database":{
+      "status":"UNHEALTHY",
+      "details":{
+        "error":"no response from ping"
+      }
+    },
+    "sidekiq":{
+      "status":"HEALTHY",
+      "details":{
+        "processed":0,
+        "failed":0,
+        "busy":0,
+        "enqueued":0,
+        "scheduled":0,
+        "retries":0,
+        "default_latency":0,
+        "redis":{
+          "uptime_in_days":"0",
+          "connected_clients":"1",
+          "used_memory_human":"979.22K",
+          "used_memory_peak_human":"1.02M"
+        }
+      }
+    }
+  }
+}
+```
+
 ## Custom Services
 
 Creating custom services is really easy. Always extend
