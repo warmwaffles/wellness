@@ -1,5 +1,8 @@
 # Wellness
 
+[![Code Climate](https://codeclimate.com/repos/52d700d0e30ba038a9003919/badges/057ded44ac30dfe1950e/gpa.png)](https://codeclimate.com/repos/52d700d0e30ba038a9003919/feed)
+
+
 A rack middleware library that adds a health check to your service. It comes
 with pre made services and has the option and flexibility for you to make your
 own.
