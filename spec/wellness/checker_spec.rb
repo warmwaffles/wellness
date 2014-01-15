@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe Wellness::Checker do
+describe Wellness::Middleware do
   pending
 end

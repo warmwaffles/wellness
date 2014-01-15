@@ -32,7 +32,7 @@ redis = Wellness::Services::RedisService.new({
 })
 system.add_service('database', pg)
 system.add_service('redis', redis)
-config.middleware.insert_before('::ActiveRecord::QueryCache', 'Wellness::Checker', system)
+config.middleware.insert_before('::ActiveRecord::QueryCache', 'Wellness::Middleware', system)
 ```
 
 ## Usage - Sinatra
@@ -56,7 +56,7 @@ redis = Wellness::Services::RedisService.new({
 system.add_service('database', pg)
 system.add_service('redis', redis)
 
-use(Wellness::Checker, system)
+use(Wellness::Middleware, system)
 ```
 
 ## Example Response
@@ -131,7 +131,7 @@ service = MyCustomService.new({foo: 'bar'})
 system.add_service('some service', service)
 
 # Load it into your rack
-use(Wellness::Checker, system)
+use(Wellness::Middleware, system)
 ```
 
 ## Contributing
