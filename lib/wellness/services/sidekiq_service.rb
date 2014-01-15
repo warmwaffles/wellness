@@ -8,7 +8,7 @@ module Wellness
       def check
         sidekiq_stats = Sidekiq::Stats.new
         queue = Sidekiq::Queue.new
-        redis = Redis.new(host: params[:redis_host])
+        redis = Redis.new(self.params.fetch(:redis))
         redis_stats = redis.info.select { |k, _| KEYS.include?(k) }
         workers_size = redis.scard("workers").to_i
 
