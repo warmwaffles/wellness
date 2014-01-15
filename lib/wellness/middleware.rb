@@ -1,3 +1,5 @@
+require 'json'
+
 module Wellness
 
   # This is to be put into the Rack environment.
@@ -16,24 +18,25 @@ module Wellness
     def call(env)
       case env['PATH_INFO']
         when @health_status_path
-          health_status(env)
+          health_status_check
         when @health_details_path
-          health_details(env)
+          health_details_check
         else
           @app.call(env)
       end
     end
 
-    def health_status(env)
+    private
+
+    def health_status_check
       if @system.check
         [200, {'Content-Type' => 'text/json'}, [{status: 'HEALTHY'}.to_json]]
       else
         [500, {'Content-Type' => 'text/json'}, [{status: 'UNHEALTHY'}.to_json]]
       end
-
     end
 
-    def health_details(env)
+    def health_details_check
       if @system.check
         [200, {'Content-Type' => 'text/json'}, [@system.to_json]]
       else
