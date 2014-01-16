@@ -29,17 +29,17 @@ module Wellness
 
     def health_status_check
       if @system.check
-        [200, { 'Content-Type' => 'text/json' }, [{ status: 'HEALTHY' }.to_json]]
+        [200, { 'Content-Type' => 'application/json' }, [{ status: 'HEALTHY' }.to_json]]
       else
-        [500, { 'Content-Type' => 'text/json' }, [{ status: 'UNHEALTHY' }.to_json]]
+        [500, { 'Content-Type' => 'application/json' }, [{ status: 'UNHEALTHY' }.to_json]]
       end
     end
 
     def health_details_check
       if @system.check
-        [200, { 'Content-Type' => 'text/json' }, [@system.to_json]]
+        [200, { 'Content-Type' => 'application/json' }, [@system.to_json]]
       else
-        [500, { 'Content-Type' => 'text/json' }, [@system.to_json]]
+        [500, { 'Content-Type' => 'application/json' }, [@system.to_json]]
       end
     end
   end

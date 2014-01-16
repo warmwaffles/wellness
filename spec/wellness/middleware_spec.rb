@@ -38,7 +38,7 @@ describe Wellness::Middleware do
         end
 
         it 'returns a json content type' do
-          expect(subject[1]).to eq({ 'Content-Type' => 'text/json' })
+          expect(subject[1]).to eq({ 'Content-Type' => 'application/json' })
         end
 
         it 'returns UNHEALTHY' do
@@ -55,7 +55,7 @@ describe Wellness::Middleware do
         end
 
         it 'returns a json content type' do
-          expect(subject[1]).to eq({ 'Content-Type' => 'text/json' })
+          expect(subject[1]).to eq({ 'Content-Type' => 'application/json' })
         end
 
         it 'returns HEALTHY' do
@@ -79,7 +79,7 @@ describe Wellness::Middleware do
         end
 
         it 'returns a json content type' do
-          expect(subject[1]).to eq({ 'Content-Type' => 'text/json' })
+          expect(subject[1]).to eq({ 'Content-Type' => 'application/json' })
         end
 
         it 'returns UNHEALTHY' do
@@ -108,7 +108,7 @@ describe Wellness::Middleware do
         end
 
         it 'returns a json content type' do
-          expect(subject[1]).to eq({ 'Content-Type' => 'text/json' })
+          expect(subject[1]).to eq({ 'Content-Type' => 'application/json' })
         end
 
         it 'returns UNHEALTHY' do
