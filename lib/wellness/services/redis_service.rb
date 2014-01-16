@@ -23,8 +23,8 @@ module Wellness
       ]
 
       def check
-        client  = Redis.new(self.params)
-        details = client.info.select { |k,_| KEYS.include?(k) }
+        client = Redis.new(self.params)
+        details = client.info.select { |k, _| KEYS.include?(k) }
 
         passed_check
         {
