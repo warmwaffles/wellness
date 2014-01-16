@@ -7,14 +7,14 @@ module Wellness
     class PostgresService < Wellness::Services::Base
       def check
         case ping
-          when PG::Constants::PQPING_NO_ATTEMPT
-            ping_failed('no attempt made to ping')
-          when PG::Constants::PQPING_NO_RESPONSE
-            ping_failed('no response from ping')
-          when PG::Constants::PQPING_REJECT
-            ping_failed('ping was rejected')
-          else
-            ping_successful
+        when PG::Constants::PQPING_NO_ATTEMPT
+          ping_failed('no attempt made to ping')
+        when PG::Constants::PQPING_NO_RESPONSE
+          ping_failed('no response from ping')
+        when PG::Constants::PQPING_REJECT
+          ping_failed('ping was rejected')
+        else
+          ping_successful
         end
       end
 
