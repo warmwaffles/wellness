@@ -1,5 +1,4 @@
 module Wellness
-
   # @author Matthew A. Johnston
   class System
     attr_reader :name, :services
@@ -59,5 +58,4 @@ module Wellness
       data.to_json
     end
   end
-
 end

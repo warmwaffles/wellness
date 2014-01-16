@@ -1,6 +1,5 @@
 module Wellness
   module Services
-
     # @author Matthew A. Johnston
     class Base
       def initialize(params={})
@@ -43,6 +42,5 @@ module Wellness
         @last_check || {}
       end
     end
-
   end
 end

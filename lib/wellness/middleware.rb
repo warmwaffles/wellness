@@ -1,7 +1,6 @@
 require 'json'
 
 module Wellness
-
   # This is to be put into the Rack environment.
   #
   # @author Matthew A. Johnston
@@ -17,12 +16,12 @@ module Wellness
 
     def call(env)
       case env['PATH_INFO']
-        when @health_status_path
-          health_status_check
-        when @health_details_path
-          health_details_check
-        else
-          @app.call(env)
+      when @health_status_path
+        health_status_check
+      when @health_details_path
+        health_details_check
+      else
+        @app.call(env)
       end
     end
 
@@ -44,5 +43,4 @@ module Wellness
       end
     end
   end
-
 end

@@ -3,7 +3,6 @@ require 'wellness/services/base'
 
 module Wellness
   module Services
-
     # @author Matthew A. Johnston
     class PostgresService < Wellness::Services::Base
       def check
@@ -58,6 +57,5 @@ module Wellness
         }
       end
     end
-
   end
 end

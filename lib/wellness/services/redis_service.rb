@@ -3,7 +3,6 @@ require 'wellness/services/base'
 
 module Wellness
   module Services
-
     class RedisService < Wellness::Services::Base
       KEYS = [
         'used_memory_human',
@@ -41,6 +40,5 @@ module Wellness
         }
       end
     end
-
   end
 end

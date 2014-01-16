@@ -1,6 +1,9 @@
+require 'redis'
+require 'sidekiq'
+require 'wellness/services/base'
+
 module Wellness
   module Services
-
     # @author Matthew A. Johnston
     class SidekiqService < Wellness::Services::Base
       KEYS = %w(redis_stats uptime_in_days connected_clients used_memory_human used_memory_peak_human)
@@ -36,6 +39,5 @@ module Wellness
         }
       end
     end
-
   end
 end
