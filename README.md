@@ -15,12 +15,6 @@ external dependencies that need to be loaded, that your application may not
 necessarily have.
 
 ```rb
-# app/config/application.rb
-
-# Add this to the top just below the bundler requires
-require 'wellness/services/postgres_service'
-require 'wellness/services/redis_service'
-
 # Within the configuration block
 system = Wellness::System.new('my-uber-duber-app')
 pg = Wellness::Services::PostgresService.new({
@@ -42,8 +36,6 @@ config.middleware.insert_before('::ActiveRecord::QueryCache', 'Wellness::Middlew
 
 ```ruby
 require 'wellness'
-require 'wellness/services/postgres_service'
-require 'wellness/services/redis_service'
 
 system = Wellness::System.new('my-uber-duber-app')
 pg = Wellness::Services::PostgresService.new({
