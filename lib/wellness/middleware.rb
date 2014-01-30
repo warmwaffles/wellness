@@ -1,5 +1,3 @@
-require 'json'
-
 module Wellness
   # This is to be put into the Rack environment.
   #

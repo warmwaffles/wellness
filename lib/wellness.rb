@@ -1,3 +1,5 @@
+require 'json'
+
 module Wellness
   VERSION = '0.2.3'
 
