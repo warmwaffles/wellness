@@ -23,7 +23,7 @@ module Wellness
       end
 
       def check
-        client = Redis.new(self.params)
+        client = build_client
         details = client.info.select { |k, _| KEYS.include?(k) }
 
         passed_check
@@ -39,6 +39,10 @@ module Wellness
             error: error.message
           }
         }
+      end
+
+      def build_client
+        Redis.new(self.params)
       end
     end
   end
