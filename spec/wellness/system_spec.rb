@@ -1,100 +1,96 @@
 require 'spec_helper'
 
 describe Wellness::System do
-  let(:name) { 'testing-app' }
-  let(:system) { described_class.new(name) }
+  let(:system) { described_class.new('test_system') }
 
-  class PassingMockService < Wellness::Services::Base
+  class UnhealthyService < Wellness::Services::Base
     def check
-      passed_check
-      {
-        'status' => 'HEALTHY',
-        'details' => {}
-      }
+      { status: 'UNHEALTHY' }
     end
   end
 
-  class FailingMockService < Wellness::Services::Base
+  class HealthyService < Wellness::Services::Base
     def check
-      failed_check
-      {
-        'status' => 'UNHEALTHY',
-        'details' => {}
-      }
+      { status: 'HEALTHY' }
     end
   end
 
-  describe '#name' do
-    subject { system.name }
-    it 'equals "testing-app"' do
-      expect(subject).to eq(name)
+  class MockedDetail < Wellness::Detail
+    def call
+      { 'data' => 'here' }
     end
   end
 
-  describe '#add_service' do
-    let(:service) { double('Service') }
-    subject { system.add_service('foo', service) }
-
-    it 'adds the service to the system' do
-      expect { subject }.to change(system.services, :length).to(1)
-    end
-  end
-
-  describe '#remove_service' do
-    let(:service) { double('Service') }
-    subject { system.remove_service('foo') }
-    before { system.add_service('foo', service) }
-    it 'removes the service from the system' do
-      expect { subject }.to change(system.services, :length).to(0)
-    end
-  end
-
-  describe '#check' do
-    subject { system.check }
-
-    context 'when no services are registered' do
-      it 'returns true' do
-        expect(subject).to be_true
+  describe '#use' do
+    context 'when a Wellness::Services::Base is provided' do
+      subject { system.use(HealthyService, 'test_service') }
+      it 'adds the service to the list of services' do
+        expect { subject }.to change { system.services.count }.by(1)
       end
     end
-
-    context 'when a passing service is registered' do
-      before { system.add_service('passing', PassingMockService.new) }
-
-      it 'returns true' do
-        expect(subject).to be_true
-      end
-    end
-
-    context 'when a failing service is registered' do
-      before { system.add_service('failing', FailingMockService.new) }
-
-      it 'returns false' do
-        expect(subject).to be_false
-      end
-    end
-
-    context 'when one service is failing and the other is passing' do
-      before do
-        system.add_service('passing', PassingMockService.new)
-        system.add_service('failing', FailingMockService.new)
-      end
-
-      it 'returns false' do
-        expect(subject).to be_false
-      end
-    end
-
-    context 'when all services are passing' do
-      before do
-        system.add_service('passing one', PassingMockService.new)
-        system.add_service('passing two', PassingMockService.new)
-      end
-
-      it 'returns true' do
-        expect(subject).to be_true
+    context 'when a Wellness::Detail is provided' do
+      subject { system.use(MockedDetail, 'test_detail') }
+      it 'adds the detail to the list of details' do
+        expect { subject }.to change { system.details.count }.by(1)
       end
     end
   end
 
+  describe '#build_report' do
+    subject { system.build_report }
+    it 'returns a Wellness::Report' do
+      expect(subject).to be_a(Wellness::Report)
+    end
+  end
+
+  describe '#detailed_check' do
+    let(:headers) { { 'Content-Type' => 'application/json' } }
+    subject { system.detailed_check }
+
+    context 'when the check is HEALTHY' do
+      before { system.use(HealthyService, 'test_service') }
+
+      it 'responds with a 200' do
+        expect(subject[0]).to eq(200)
+      end
+      it 'sets the "Content-Type" to "application/json"' do
+        expect(subject[1]).to eq(headers)
+      end
+    end
+    context 'when the check is UNHEALTHY' do
+      before { system.use(UnhealthyService, 'test_service') }
+
+      it 'responds with a 500' do
+        expect(subject[0]).to eq(500)
+      end
+      it 'sets the "Content-Type" to "application/json"' do
+        expect(subject[1]).to eq(headers)
+      end
+    end
+  end
+
+  describe '#simple_check' do
+    let(:headers) { { 'Content-Type' => 'application/json' } }
+    subject { system.simple_check }
+    context 'when the check is HEALTHY' do
+      before { system.use(HealthyService, 'test_service') }
+
+      it 'responds with a 200' do
+        expect(subject[0]).to eq(200)
+      end
+      it 'sets the "Content-Type" to "application/json"' do
+        expect(subject[1]).to eq(headers)
+      end
+    end
+    context 'when the check is UNHEALTHY' do
+      before { system.use(UnhealthyService, 'test_service') }
+
+      it 'responds with a 500' do
+        expect(subject[0]).to eq(500)
+      end
+      it 'sets the "Content-Type" to "application/json"' do
+        expect(subject[1]).to eq(headers)
+      end
+    end
+  end
 end

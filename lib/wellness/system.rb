@@ -1,61 +1,49 @@
 module Wellness
-  # @author Matthew A. Johnston
+  # @author Matthew A. Johnston (warmwaffles)
   class System
-    attr_reader :name, :services
-
-    attr_accessor :details
+    attr_reader :name
 
     # @param name [String] the name of the system
     def initialize(name)
       @name = name
-      @services = Hash.new
-      @details = Hash.new
+      @services = []
+      @details = []
+      @mutex = Mutex.new
     end
 
-    # Add a service to this system
-    #
-    # @param name [String, Symbol] the name of the service
-    # @param service [Wellness::Service] the service you wish to add
-    def add_service(name, service)
-      @services[name] = service
-    end
-
-    # Remove a service from this system
-    #
-    # @param name [String, Symbol]
-    # @return [Wellness::Service] the service removed, else nil
-    def remove_service(name)
-      @services.delete(name)
-    end
-
-    # Checks all of the services
-    # @return
-    def check
-      @services.values.each { |service| service.call }
-      healthy?
-    end
-
-    # Returns true if the system is healthy, false otherwise
-    #
-    # @return [Boolean]
-    def healthy?
-      @services.values.all? { |service| service.healthy? }
-    end
-
-    def to_json(*)
-      dependencies = Hash.new
-
-      @services.each do |name, service|
-        dependencies[name] = service.last_check
+    def use(klass, *args)
+      @mutex.synchronize do
+        factory = Factory.new(klass, *args)
+        if klass <= Wellness::Services::Base
+          @services << factory
+        else
+          @details << factory
+        end
       end
+    end
 
-      data = {
-        status: (healthy? ? 'HEALTHY' : 'UNHEALTHY'),
-        details: @details,
-        dependencies: dependencies
-      }
+    def detailed_check
+      report = build_report
+      [report.status_code, { 'Content-Type' => 'application/json' }, [report.detailed.to_json]]
+    end
 
-      data.to_json
+    def simple_check
+      report = build_report
+      [report.status_code, { 'Content-Type' => 'application/json' }, [report.simple.to_json]]
+    end
+
+    def build_report
+      @mutex.synchronize do
+        Wellness::Report.new(services, details)
+      end
+    end
+
+    def services
+      Hash[@services.map(&:build).map { |s| [s.name, s.check] }]
+    end
+
+    def details
+      Hash[@details.map(&:build).map { |d| [d.name, d.call] }]
     end
   end
 end

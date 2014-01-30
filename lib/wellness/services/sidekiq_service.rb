@@ -9,14 +9,14 @@ module Wellness
         require 'sidekiq'
       end
 
+      # @return [Hash]
       def check
         sidekiq_stats = Sidekiq::Stats.new
         queue = Sidekiq::Queue.new
         redis = Redis.new(self.params.fetch(:redis))
         redis_stats = redis.info.select { |k, _| KEYS.include?(k) }
-        workers_size = redis.scard("workers").to_i
+        workers_size = redis.scard('workers').to_i
 
-        passed_check
         {
           status: 'HEALTHY',
           details: {
@@ -31,7 +31,6 @@ module Wellness
           }
         }
       rescue => error
-        failed_check
         {
           status: 'UNHEALTHY',
           details: {
