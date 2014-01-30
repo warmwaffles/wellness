@@ -1,7 +1,7 @@
 module Wellness
-end
+  VERSION = '0.2.3'
 
-require 'wellness/version'
-require 'wellness/services/base'
-require 'wellness/system'
-require 'wellness/middleware'
+  autoload :Services,   'wellness/services'
+  autoload :Middleware, 'wellness/middleware'
+  autoload :System,     'wellness/system'
+end

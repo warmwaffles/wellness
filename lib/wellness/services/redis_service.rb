@@ -1,9 +1,6 @@
-require 'redis'
-require 'wellness/services/base'
-
 module Wellness
   module Services
-    class RedisService < Wellness::Services::Base
+    class RedisService < Base
       KEYS = [
         'used_memory_human',
         'connected_clients',
@@ -20,6 +17,10 @@ module Wellness
         'uptime_in_seconds',
         'uptime_in_days'
       ]
+
+      dependency do
+        require('redis')
+      end
 
       def check
         client = Redis.new(self.params)
