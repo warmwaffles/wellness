@@ -2,29 +2,44 @@ module Wellness
   module Services
     # @author Matthew A. Johnston
     class Base
+      attr_reader :params
+
+      # Load dependencies when the class is loaded. This makes putting requires
+      # at the top of the file unnecessary. It plays nicely with the
+      # auto loader.
+      def self.dependency
+        yield if block_given?
+      end
+
+      # @param params [Hash]
       def initialize(params={})
         @params = params
         @health = false
+        @mutex = Mutex.new
       end
 
       # Flags the check as failed
+      # @return [FalseClass]
       def failed_check
-        @health = false
+        @mutex.synchronize do
+          @health = false
+        end
       end
 
       # Flags the check as passed
+      # @return [TrueClass]
       def passed_check
-        @health = true
-      end
-
-      def params
-        @params.dup
+        @mutex.synchronize do
+          @health = true
+        end
       end
 
       # Returns true if the service is healthy, otherwise false
-      # @return [Boolean]
+      # @return [TrueClass,FalseClass]
       def healthy?
-        !!@health
+        @mutex.synchronize do
+          !!@health
+        end
       end
 
       # @return [Hash]
@@ -39,7 +54,9 @@ module Wellness
 
       # @return [Hash]
       def last_check
-        @last_check || {}
+        @mutex.synchronize do
+          @last_check ||= {}
+        end
       end
     end
   end

@@ -1,12 +1,13 @@
-require 'redis'
-require 'sidekiq'
-require 'wellness/services/base'
-
 module Wellness
   module Services
     # @author Matthew A. Johnston
-    class SidekiqService < Wellness::Services::Base
+    class SidekiqService < Base
       KEYS = %w(redis_stats uptime_in_days connected_clients used_memory_human used_memory_peak_human)
+
+      dependency do
+        require 'redis'
+        require 'sidekiq'
+      end
 
       def check
         sidekiq_stats = Sidekiq::Stats.new

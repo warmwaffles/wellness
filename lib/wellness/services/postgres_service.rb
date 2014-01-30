@@ -1,10 +1,11 @@
-require 'pg'
-require 'wellness/services/base'
-
 module Wellness
   module Services
     # @author Matthew A. Johnston
-    class PostgresService < Wellness::Services::Base
+    class PostgresService < Base
+      dependency do
+        require('pg')
+      end
+
       def check
         case ping
         when PG::Constants::PQPING_NO_ATTEMPT
