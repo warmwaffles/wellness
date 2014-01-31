@@ -3,10 +3,11 @@ module Wellness
   #
   # @author Matthew A. Johnston (warmwaffles)
   class Detail
-    attr_reader :name, :result
+    attr_reader :name, :options, :result
 
-    def initialize(name)
+    def initialize(name, options={})
       @name = name
+      @options = options
       @result = {}
     end
 

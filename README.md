@@ -124,6 +124,28 @@ system.use(MyCustomService, 'some service', {foo: 'bar'})
 use(Wellness::Middleware, system)
 ```
 
+## Custom Details
+
+```ruby
+# Your custom detail component
+class MyDetail < Wellness::Detail
+  def check
+    {
+      'foo' => 12,
+      'bar' => 31,
+      'qux' => options[:qux]
+    }
+  end
+end
+
+# Initialize the wellness system
+system = Wellness::System.new('my-app')
+system.use(MyDetail, 'something', { qux: 9000 })
+
+# Load it into your rack
+use(Wellness::Middleware, system)
+```
+
 ## Contributing
 
 1. Fork it
