@@ -3,24 +3,6 @@ require 'spec_helper'
 describe Wellness::System do
   let(:system) { described_class.new('test_system') }
 
-  class UnhealthyService < Wellness::Services::Base
-    def check
-      { status: 'UNHEALTHY' }
-    end
-  end
-
-  class HealthyService < Wellness::Services::Base
-    def check
-      { status: 'HEALTHY' }
-    end
-  end
-
-  class MockedDetail < Wellness::Detail
-    def call
-      { 'data' => 'here' }
-    end
-  end
-
   describe '#use' do
     context 'when a Wellness::Services::Base is provided' do
       subject { system.use(HealthyService, 'test_service') }

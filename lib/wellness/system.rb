@@ -34,16 +34,16 @@ module Wellness
 
     def build_report
       @mutex.synchronize do
-        Wellness::Report.new(services, details)
+        Wellness::Report.new(services.map(&:call), details.map(&:call))
       end
     end
 
     def services
-      Hash[@services.map(&:build).map { |s| [s.name, s.check] }]
+      @services.map(&:build)
     end
 
     def details
-      Hash[@details.map(&:build).map { |d| [d.name, d.call] }]
+      @details.map(&:build)
     end
   end
 end

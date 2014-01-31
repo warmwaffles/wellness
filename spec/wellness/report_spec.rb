@@ -59,22 +59,25 @@ describe Wellness::Report do
   describe '#healthy?' do
     subject { report.healthy? }
     context 'when all of the report are healthy' do
-      let(:services) { { 'foo' => { status: 'HEALTHY' }, 'bar' => { status: 'HEALTHY' } } }
-      let(:report) { described_class.new(services, {}) }
+      let(:services) { [HealthyService.new('service-a'), HealthyService.new('service-b')] }
+      let(:report) { described_class.new(services, []) }
+      before { services.collect(&:call) }
       it 'returns true' do
         expect(subject).to eq(true)
       end
     end
     context 'when one of the reports are not healthy' do
-      let(:services) { { 'foo' => { status: 'HEALTHY' }, 'bar' => { status: 'UNHEALTHY' } } }
-      let(:report) { described_class.new(services, {}) }
+      let(:services) { [HealthyService.new('service-a'), UnhealthyService.new('service-b')] }
+      let(:report) { described_class.new(services, []) }
+      before { services.collect(&:call) }
       it 'returns false' do
         expect(subject).to eq(false)
       end
     end
     context 'when all of the reports are not healthy' do
-      let(:services) { { 'foo' => { status: 'UNHEALTHY' }, 'bar' => { status: 'UNHEALTHY' } } }
-      let(:report) { described_class.new(services, {}) }
+      let(:services) { [UnhealthyService.new('service-a'), UnhealthyService.new('service-b')] }
+      let(:report) { described_class.new(services, []) }
+      before { services.collect(&:call) }
       it 'returns false' do
         expect(subject).to eq(false)
       end

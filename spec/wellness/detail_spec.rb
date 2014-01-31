@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Wellness::Detail do
-  let(:detail) { described_class.new('test_detail') }
+  let(:detail) { MockedDetail.new('test_detail') }
 
   describe '#name' do
     subject { detail.name }
@@ -12,8 +12,15 @@ describe Wellness::Detail do
 
   describe '#call' do
     subject { detail.call }
-    it 'returns an empty hash' do
-      expect(subject).to be_empty
+    it 'sets the result' do
+      expect { subject }.to change(detail, :result)
+    end
+  end
+
+  describe '#check' do
+    subject { detail.check }
+    it 'returns a hash' do
+      expect(subject).to be_a(Hash)
     end
   end
 end

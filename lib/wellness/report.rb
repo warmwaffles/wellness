@@ -1,13 +1,11 @@
 module Wellness
   # A simple presenter for the services and details of the Wellness System.
-  # This does not contain any logic for running checks and gathering details,
-  # simply because the details and results should be passed in.
   #
   # @author Matthew A. Johnston (warmwaffles)
   class Report
     # @param services [Hash]
     # @param details [Hash]
-    def initialize(services={}, details={})
+    def initialize(services, details)
       @services = services
       @details = details
     end
@@ -16,8 +14,8 @@ module Wellness
     def detailed
       {
         status: status,
-        services: @services,
-        details: @details
+        services: services,
+        details: details
       }
     end
 
@@ -47,7 +45,15 @@ module Wellness
 
     # @return [TrueClass,FalseClass]
     def healthy?
-      @services.values.all? { |h| h[:status] == 'HEALTHY' }
+      @services.all?(&:healthy?)
+    end
+
+    def services
+      Hash[@services.map { |s| [s.name, s.result] }]
+    end
+
+    def details
+      Hash[@details.map { |d| [d.name, d.result] }]
     end
   end
 end
