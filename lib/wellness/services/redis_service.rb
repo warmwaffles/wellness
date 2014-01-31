@@ -22,27 +22,35 @@ module Wellness
         require('redis')
       end
 
+      # @return [Hash]
       def check
         client = build_client
         details = client.info.select { |k, _| KEYS.include?(k) }
+        passed(details)
+      rescue Redis::BaseError => error
+        failed(error)
+      rescue Exception => error
+        failed(error)
+      end
 
-        passed_check
+      def build_client
+        Redis.new(self.params)
+      end
+
+      def passed(details)
         {
           status: 'HEALTHY',
           details: details
         }
-      rescue Redis::BaseError => error
-        failed_check
+      end
+
+      def failed(error)
         {
           status: 'UNHEALTHY',
           details: {
             error: error.message
           }
         }
-      end
-
-      def build_client
-        Redis.new(self.params)
       end
     end
   end

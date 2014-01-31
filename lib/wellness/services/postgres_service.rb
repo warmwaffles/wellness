@@ -6,8 +6,9 @@ module Wellness
         require('pg')
       end
 
+      # @return [Hash]
       def check
-        case ping
+        case PG::Connection.ping(connection_options)
         when PG::Constants::PQPING_NO_ATTEMPT
           ping_failed('no attempt made to ping')
         when PG::Constants::PQPING_NO_RESPONSE
@@ -20,10 +21,6 @@ module Wellness
       end
 
       private
-
-      def ping
-        PG::Connection.ping(connection_options)
-      end
 
       # @return [Hash]
       def connection_options
@@ -39,7 +36,6 @@ module Wellness
       # @param message [String] the reason it failed
       # @return [Hash]
       def ping_failed(message)
-        failed_check
         {
           status: 'UNHEALTHY',
           details: {
@@ -50,7 +46,6 @@ module Wellness
 
       # @return [Hash]
       def ping_successful
-        passed_check
         {
           status: 'HEALTHY',
           details: {

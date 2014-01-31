@@ -1,138 +1,66 @@
 require 'spec_helper'
 
 describe Wellness::Middleware do
-  let(:app) { double('Application', call: true) }
-  let(:system) { Wellness::System.new('testing') }
-  let(:middleware) { Wellness::Middleware.new(app, system) }
+  let(:app) { double('Application') }
+  let(:system) { Wellness::System.new('test_system') }
 
-  class PassingMockService < Wellness::Services::Base
-    def check
-      passed_check
-      {
-        'status' => 'HEALTHY',
-        'details' => {}
-      }
+  describe '#health_status_path' do
+    subject { middleware.health_status_path }
+    context 'when the status_path is not passed' do
+      let(:middleware) { described_class.new(app, system) }
+      it 'returns "/health/status"' do
+        expect(subject).to eq('/health/status')
+      end
+    end
+    context 'when the status_path is passed' do
+      let(:options) { {status_path: '/path/to/status' } }
+      let(:middleware) { described_class.new(app, system, options) }
+      it 'returns "/path/to/status"' do
+        expect(subject).to eq('/path/to/status')
+      end
     end
   end
 
-  class FailingMockService < Wellness::Services::Base
-    def check
-      failed_check
-      {
-        'status' => 'UNHEALTHY',
-        'details' => {}
-      }
+  describe '#health_details_path' do
+    context 'when the details_path is not passed' do
+      let(:middleware) { described_class.new(app, system) }
+      subject { middleware.health_details_path }
+      it 'returns "/health/details"' do
+        expect(subject).to eq('/health/details')
+      end
+    end
+    context 'when the details_path is passed' do
+      let(:options) { {details_path: '/path/to/status' } }
+      let(:middleware) { described_class.new(app, system, options) }
+      subject { middleware.health_details_path }
+      it 'returns "/path/to/status"' do
+        expect(subject).to eq('/path/to/status')
+      end
     end
   end
 
   describe '#call' do
-    context 'when the PATH_INFO is the health status path' do
+    let(:middleware) { described_class.new(app, system) }
+    context 'when the PATH_INFO matches the health_status_path' do
       let(:env) { { 'PATH_INFO' => '/health/status' } }
-      subject { middleware.call(env) }
-
-      context 'when the system check is unhealthy' do
-        before { system.stub(check: false) }
-
-        it 'returns a 500 status' do
-          expect(subject[0]).to eq(500)
-        end
-
-        it 'returns a json content type' do
-          expect(subject[1]).to eq({ 'Content-Type' => 'application/json' })
-        end
-
-        it 'returns UNHEALTHY' do
-          data = JSON.parse(subject[2].first)
-          expect(data).to eq({ 'status' => 'UNHEALTHY' })
-        end
-      end
-
-      context 'when the system check is healthy' do
-        before { system.stub(check: true) }
-
-        it 'returns a 200 status' do
-          expect(subject[0]).to eq(200)
-        end
-
-        it 'returns a json content type' do
-          expect(subject[1]).to eq({ 'Content-Type' => 'application/json' })
-        end
-
-        it 'returns HEALTHY' do
-          data = JSON.parse(subject[2].first)
-          expect(data).to eq({ 'status' => 'HEALTHY' })
-        end
+      before { system.stub(simple_check: true) }
+      it 'calls #simple_check on the system' do
+        middleware.call(env)
+        expect(system).to have_received(:simple_check).once
       end
     end
-
-    context 'when the PATH_INFO is the health details path' do
+    context 'when the PATH_INFO matches the health_details_path' do
       let(:env) { { 'PATH_INFO' => '/health/details' } }
-      subject { middleware.call(env) }
-
-      context 'when the system check is unhealthy' do
-        before do
-          system.add_service('mock service', FailingMockService.new)
-        end
-
-        it 'returns a 500 status' do
-          expect(subject[0]).to eq(500)
-        end
-
-        it 'returns a json content type' do
-          expect(subject[1]).to eq({ 'Content-Type' => 'application/json' })
-        end
-
-        it 'returns UNHEALTHY' do
-          expected = {
-            'status' => 'UNHEALTHY',
-            'details' => {},
-            'dependencies' => {
-              'mock service' => {
-                'status' => 'UNHEALTHY',
-                'details' => {}
-              }
-            }
-          }
-
-          data = JSON.parse(subject[2].first)
-          expect(data).to eq(expected)
-        end
-      end
-      context 'when the system check is healthy' do
-        before do
-          system.add_service('mock service', PassingMockService.new)
-        end
-
-        it 'returns a 200 status' do
-          expect(subject[0]).to eq(200)
-        end
-
-        it 'returns a json content type' do
-          expect(subject[1]).to eq({ 'Content-Type' => 'application/json' })
-        end
-
-        it 'returns UNHEALTHY' do
-          expected = {
-            'status' => 'HEALTHY',
-            'details' => {},
-            'dependencies' => {
-              'mock service' => {
-                'status' => 'HEALTHY',
-                'details' => {}
-              }
-            }
-          }
-
-          data = JSON.parse(subject[2].first)
-          expect(data).to eq(expected)
-        end
+      before { system.stub(detailed_check: true) }
+      it 'calls #detailed_check on the system' do
+        middleware.call(env)
+        expect(system).to have_received(:detailed_check).once
       end
     end
-
-    context 'when the PATH_INFO is /who/cares' do
-      let(:env) { { 'PATH_INFO' => '/who/cares' } }
-
-      it 'passes the request to the next rack' do
+    context 'when the PATH_INFO doesn\'t match any of the paths' do
+      let(:env) { { 'PATH_INFO' => '/different/path' } }
+      before { app.stub(call: true) }
+      it 'calls #detailed_check on the system' do
         middleware.call(env)
         expect(app).to have_received(:call).with(env)
       end

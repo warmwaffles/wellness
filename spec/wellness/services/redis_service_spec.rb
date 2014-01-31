@@ -27,21 +27,5 @@ describe Wellness::Services::RedisService do
       'keyspace_misses' => '0'
     }
   }
-  describe '#check' do
-    subject { service.check }
-    context 'when redis can\'t connect' do
-      it 'fails the health check' do
-        expect(subject).to include(status: 'UNHEALTHY')
-      end
-    end
-    context 'when redis returns the its details' do
-      let(:client) { double('Redis', info: redis_info) }
-      before do
-        service.stub(build_client: client)
-      end
-      it 'passes the health check' do
-        expect(subject).to include(status: 'HEALTHY')
-      end
-    end
-  end
+  pending
 end
