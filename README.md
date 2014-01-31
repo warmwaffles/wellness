@@ -16,19 +16,19 @@ necessarily have.
 
 ```rb
 # Within the configuration block
+
 system = Wellness::System.new('my-uber-duber-app')
-pg = Wellness::Services::PostgresService.new({
-  host: ENV['POSTGRESQL_HOST'],
-  port: ENV['POSTGRESQL_PORT'],
+system.use(Wellness::Services::PostgresService, 'database', {
+  host:     ENV['POSTGRESQL_HOST'],
+  port:     ENV['POSTGRESQL_PORT'],
   database: ENV['POSTGRESQL_DATABASE'],
-  user: ENV['POSTGRESQL_USERNAME'],
+  user:     ENV['POSTGRESQL_USERNAME'],
   password: ENV['POSTGRESQL_PASSWORD']
 })
-redis = Wellness::Services::RedisService.new({
+system.use(Wellness::Services::RedisService, 'redis', {
   host: ENV['REDIS_HOST']
 })
-system.add_service('database', pg)
-system.add_service('redis', redis)
+
 config.middleware.insert_before('::ActiveRecord::QueryCache', 'Wellness::Middleware', system)
 ```
 
@@ -38,18 +38,16 @@ config.middleware.insert_before('::ActiveRecord::QueryCache', 'Wellness::Middlew
 require 'wellness'
 
 system = Wellness::System.new('my-uber-duber-app')
-pg = Wellness::Services::PostgresService.new({
-  host: ENV['POSTGRESQL_HOST'],
-  port: ENV['POSTGRESQL_PORT'],
+system.use(Wellness::Services::PostgresService, 'database', {
+  host:     ENV['POSTGRESQL_HOST'],
+  port:     ENV['POSTGRESQL_PORT'],
   database: ENV['POSTGRESQL_DATABASE'],
-  user: ENV['POSTGRESQL_USERNAME'],
+  user:     ENV['POSTGRESQL_USERNAME'],
   password: ENV['POSTGRESQL_PASSWORD']
 })
-redis = Wellness::Services::RedisService.new({
+system.use(Wellness::Services::RedisService, 'redis', {
   host: ENV['REDIS_HOST']
 })
-system.add_service('database', pg)
-system.add_service('redis', redis)
 
 use(Wellness::Middleware, system)
 ```
@@ -107,12 +105,10 @@ run time. It can lead to unintended consequences, and weird bugs.
 class MyCustomService < Wellness::Services::Base
   def check
     if params[:foo]
-      passed_check
       {
         'status': 'HEALTHY'
       }
     else
-      failed_check
       {
         'status': 'UNHEALTHY'
       }
@@ -122,8 +118,7 @@ end
 
 # Initialize the wellness system
 system = Wellness::System.new('my-app')
-service = MyCustomService.new({foo: 'bar'})
-system.add_service('some service', service)
+system.use(MyCustomService, 'some service', {foo: 'bar'})
 
 # Load it into your rack
 use(Wellness::Middleware, system)
