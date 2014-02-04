@@ -1,3 +1,5 @@
+require 'wellness/services/base'
+
 module Wellness
   module Services
     class RedisService < Base

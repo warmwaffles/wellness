@@ -1,8 +1,9 @@
 module Wellness
   module Services
-    autoload :Base,            'wellness/services/base'
-    autoload :PostgresService, 'wellness/services/postgres_service'
-    autoload :RedisService,    'wellness/services/redis_service'
-    autoload :SidekiqService,  'wellness/services/sidekiq_service'
   end
 end
+
+require 'wellness/services/base'
+require 'wellness/services/postgres_service'
+require 'wellness/services/redis_service'
+require 'wellness/services/sidekiq_service'

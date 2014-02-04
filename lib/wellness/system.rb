@@ -1,3 +1,6 @@
+require 'wellness/services/base'
+require 'wellness/report'
+
 module Wellness
   # @author Matthew A. Johnston (warmwaffles)
   class System
