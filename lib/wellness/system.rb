@@ -1,52 +1,23 @@
-require 'wellness/services/base'
-require 'wellness/report'
+require 'wellness/service'
 
 module Wellness
   # @author Matthew A. Johnston (warmwaffles)
   class System
-    attr_reader :name
+    attr_reader :name, :services, :details
 
     # @param name [String] the name of the system
     def initialize(name)
-      @name = name
-      @services = []
-      @details = []
-      @mutex = Mutex.new
+      @name     = name
+      @services = {}
+      @details  = {}
     end
 
-    def use(klass, *args)
-      @mutex.synchronize do
-        factory = Factory.new(klass, *args)
-        if klass <= Wellness::Services::Base
-          @services << factory
-        else
-          @details << factory
-        end
-      end
+    def add_service(name, service, options={})
+      @services[name] = Wellness::Service.new(service, options)
     end
 
-    def detailed_check
-      report = build_report
-      [report.status_code, { 'Content-Type' => 'application/json' }, [report.detailed.to_json]]
-    end
-
-    def simple_check
-      report = build_report
-      [report.status_code, { 'Content-Type' => 'application/json' }, [report.simple.to_json]]
-    end
-
-    def build_report
-      @mutex.synchronize do
-        Wellness::Report.new(services.map(&:call), details.map(&:call))
-      end
-    end
-
-    def services
-      @services.map(&:build)
-    end
-
-    def details
-      @details.map(&:build)
+    def add_detail(name, detail)
+      @details[name] = detail
     end
   end
 end

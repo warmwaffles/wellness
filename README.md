@@ -14,22 +14,26 @@ However, you must require them when you need them. This is because they have
 external dependencies that need to be loaded, that your application may not
 necessarily have.
 
-```rb
-# Within the configuration block
+```ruby
+module MySuperCoolApplication
+  class Application < Rails::Application
+    system  = Wellness::System.new('my-super-cool-app')
+    service = Wellness::Services::PostgresService.new({
+      host:     ENV['POSTGRESQL_HOST'],
+      port:     ENV['POSTGRESQL_PORT'],
+      database: ENV['POSTGRESQL_DATABASE'],
+      user:     ENV['POSTGRESQL_USERNAME'],
+      password: ENV['POSTGRESQL_PASSWORD']
+    })
+    system.add_service('database', service, { critical: true })
+    service = Wellness::Services::RedisService.new({
+      host: ENV['REDIS_HOST']
+    })
+    system.add_service('redis', service, { critical: false})
 
-system = Wellness::System.new('my-uber-duber-app')
-system.use(Wellness::Services::PostgresService, 'database', {
-  host:     ENV['POSTGRESQL_HOST'],
-  port:     ENV['POSTGRESQL_PORT'],
-  database: ENV['POSTGRESQL_DATABASE'],
-  user:     ENV['POSTGRESQL_USERNAME'],
-  password: ENV['POSTGRESQL_PASSWORD']
-})
-system.use(Wellness::Services::RedisService, 'redis', {
-  host: ENV['REDIS_HOST']
-})
-
-config.middleware.insert_before('::ActiveRecord::QueryCache', 'Wellness::Middleware', system)
+    config.middleware.insert_before('::ActiveRecord::QueryCache', 'Wellness::Middleware', system)
+  end
+end
 ```
 
 ## Usage - Sinatra
@@ -37,28 +41,32 @@ config.middleware.insert_before('::ActiveRecord::QueryCache', 'Wellness::Middlew
 ```ruby
 require 'wellness'
 
-system = Wellness::System.new('my-uber-duber-app')
-system.use(Wellness::Services::PostgresService, 'database', {
+system  = Wellness::System.new('my-super-cool-app')
+service = Wellness::Services::PostgresService.new({
   host:     ENV['POSTGRESQL_HOST'],
   port:     ENV['POSTGRESQL_PORT'],
   database: ENV['POSTGRESQL_DATABASE'],
   user:     ENV['POSTGRESQL_USERNAME'],
   password: ENV['POSTGRESQL_PASSWORD']
 })
-system.use(Wellness::Services::RedisService, 'redis', {
+system.add_service('database', service, { critical: true })
+service = Wellness::Services::RedisService.new({
   host: ENV['REDIS_HOST']
 })
+system.add_service('redis', service, { critical: false})
 
 use(Wellness::Middleware, system)
 ```
 
-## Example Response
+## Example Responses
 
 ```json
 {
-  "status":"UNHEALTHY",
-  "details":{
-
+  "status": "UNHEALTHY",
+  "details": {
+    "git" : {
+      "revision" : "1234567"
+    }
   },
   "dependencies":{
     "database":{
@@ -89,58 +97,118 @@ use(Wellness::Middleware, system)
 }
 ```
 
+```json
+{
+    "status": "HEALTHY",
+    "services": {
+        "postgresql": {
+            "status": "HEALTHY",
+            "details": { }
+        },
+        "mysql": {
+            "status": "HEALTHY",
+            "details": { }
+        }
+    },
+    "details": {
+        "git": {
+            "revision": "1234567"
+        }
+    }
+}
+```
+
 ## Custom Services
 
-Creating custom services is really easy. Always extend
-`Wellness::Services::Base`.
+Creating a custom service is super easy. As long as the service responds to
+`#call`, you are just fine. Passing a `lambda` or `Proc` is perfectly
+acceptable.
 
-Once that is done, you must implement the `#check` method.
+### Requirements
 
-The parameters passed into the service at creation are stored under `#params`.
-Under no circumstances, should you ever modify the original parameters list at
-run time. It can lead to unintended consequences, and weird bugs.
+This interface has a few requirements.
+
+  1. A service **MUST** respond to `#call`
+  2. A hash **MUST** be returned
+  3. The hash returned **MUST** contain a `status` key at the root level.
+  4. Status can **ONLY** be `HEALTHY`, `UNHEALTHY`, and `DEGRADED`
+  5. All hash keys **MUST** be strings
+
+### Example
 
 ```ruby
-# Your custom service
-class MyCustomService < Wellness::Services::Base
-  def check
-    if params[:foo]
-      {
-        'status': 'HEALTHY'
+module MyServices
+  class MySQLService
+    def initialize(args={})
+      @connection_options = {
+        host: args[:host],
+        port: args[:port],
+        database: args[:database],
+        username: args[:username],
+        password: args[:password]
       }
-    else
+    end
+
+    def healthy(details={})
       {
-        'status': 'UNHEALTHY'
+        'status' => 'HEALTHY',
+        'details' => details
       }
+    end
+
+    def unhealthy(details={})
+      {
+        'status' => 'UNHEALTHY',
+        'details' => details
+      }
+    end
+
+    def call
+      connection = Mysql2::Client.new(@connection_options)
+      connection.ping ? healthy : unhealthy
+    rescue Mysql2::Error => error
+      unhealthy('error' => error.message)
     end
   end
 end
 
-# Initialize the wellness system
 system = Wellness::System.new('my-app')
-system.use(MyCustomService, 'some service', {foo: 'bar'})
-
-# Load it into your rack
-use(Wellness::Middleware, system)
+system.use('mysql', MyServices::MySQLService.new({
+  # ... configuration ...
+}))
 ```
 
 ## Custom Details
 
+Details are useful if you want to display information on an application like the
+current git revision, or how many requests have been serviced by the application.
+
+### Requirements
+
+  1. A detail **MUST** respond to `#call`
+  2. A hash **MUST** be returned
+  3. All hash keys **MUST** be strings
+
+### Example
+
 ```ruby
 # Your custom detail component
-class MyDetail < Wellness::Detail
-  def check
-    {
-      'foo' => 12,
-      'bar' => 31,
-      'qux' => options[:qux]
-    }
+module MyDetails
+  class GitRevisionDetail
+    def call
+      {
+        'revision' => revision
+      }
+    end
+
+    def revision
+      `git rev-parse --short HEAD`.chomp
+    end
   end
 end
-
 # Initialize the wellness system
 system = Wellness::System.new('my-app')
-system.use(MyDetail, 'something', { qux: 9000 })
+system.use('git', MyDetails::GitRevisionDetail.new)
 
 # Load it into your rack
 use(Wellness::Middleware, system)

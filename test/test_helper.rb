@@ -1,7 +1,10 @@
+require 'rubygems'
+require 'bundler'
+
 require 'minitest/autorun'
-require 'minitest/spec'
+require 'minitest/unit'
 require 'minitest/pride'
 
-require 'wellness'
+Bundler.require
 
 Dir.glob('./support/**/*.rb') { |f| require f }
