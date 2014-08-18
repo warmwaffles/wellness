@@ -4,9 +4,10 @@ module Wellness
 end
 
 require 'wellness/version'
-require 'wellness/services'
-require 'wellness/middleware'
-require 'wellness/system'
 require 'wellness/detail'
-require 'wellness/report'
-require 'wellness/factory'
+require 'wellness/detailed_report'
+require 'wellness/middleware'
+require 'wellness/service'
+require 'wellness/services/base'
+require 'wellness/simple_report'
+require 'wellness/system'

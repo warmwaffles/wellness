@@ -20,37 +20,31 @@ module Wellness
         'uptime_in_days'
       ]
 
-      dependency do
-        require('redis')
+      def initialize(args={})
+        @params = args
       end
 
       # @return [Hash]
-      def check
-        client = build_client
+      def call
+        client  = Redis.new(@params)
         details = client.info.select { |k, _| KEYS.include?(k) }
-        passed(details)
+        client.disconnect
+
+        {
+          'status' => 'HEALTHY',
+          'details' => details
+        }
       rescue Redis::BaseError => error
         failed(error)
       rescue Exception => error
         failed(error)
       end
 
-      def build_client
-        Redis.new(self.params)
-      end
-
-      def passed(details)
-        {
-          status: 'HEALTHY',
-          details: details
-        }
-      end
-
       def failed(error)
         {
-          status: 'UNHEALTHY',
-          details: {
-            error: error.message
+          'status' => 'UNHEALTHY',
+          'details' => {
+            'error' => error.message
           }
         }
       end

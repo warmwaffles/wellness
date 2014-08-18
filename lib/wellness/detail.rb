@@ -1,19 +1,18 @@
 module Wellness
   # The parent class of all details that need to run.
   #
+  # @deprecated This is simply here help with migrating
+  #
   # @author Matthew A. Johnston (warmwaffles)
   class Detail
-    attr_reader :name, :options, :result
+    attr_reader :options
 
-    def initialize(name, options={})
-      @name = name
+    def initialize(options={})
       @options = options
-      @result = {}
     end
 
     def call
-      @result = self.check
-      self
+      self.check
     end
 
     # @return [Hash]

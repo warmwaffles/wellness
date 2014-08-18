@@ -1,3 +1,6 @@
+require 'wellness/simple_report'
+require 'wellness/detailed_report'
+
 module Wellness
   # This is to be put into the Rack environment.
   #
@@ -20,9 +23,9 @@ module Wellness
     def call(env)
       case env['PATH_INFO']
       when health_status_path
-        @system.simple_check
+        Wellness::SimpleReport.new(@system).call
       when health_details_path
-        @system.detailed_check
+        Wellness::DetailedReport.new(@system).call
       else
         @app.call(env)
       end
