@@ -28,7 +28,7 @@ module Wellness
       def call
         client  = Redis.new(@params)
         details = client.info.select { |k, _| KEYS.include?(k) }
-        client.disconnect
+        client.quit
 
         {
           'status' => 'HEALTHY',
